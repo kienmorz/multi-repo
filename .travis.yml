@@ -1,0 +1,19 @@
+sudo: required
+services:
+ - docker
+
+before_install:
+ - docker build -t kienmorz/react-test -f ./client/Dockerfile.dev ./client/
+
+script:
+ - docker run -e CI=true kienmorz/react-test npm test -- --passWithNoTests
+after_success:
+ - docker build -t kienmorz/multi-client ./client
+ - docker build -t kienmorz/multi-nginx ./nginx
+ - docker build -t kienmorz/multi-server ./server
+ - docker build -t kienmorz/multi-worker ./worker
+ - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+ - docker push kienmorz/multi-client
+ - docker push kienmorz/mulit-nginx
+ - docker push kienmorz/multi-server
+ - docker push kienmorz/mulit-worker
